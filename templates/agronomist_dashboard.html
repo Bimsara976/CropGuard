@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Agronomist Dashboard — CropGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="dashboard-header flex" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1>Agronomist Control Panel</h1>
+      <p>Welcome back, <strong>{{ session.username }}</strong>. Review ensemble metrics and detailed analyses.</p>
+    </div>
+    <div style="text-align:right;">
+      <a href="{{ url_for('upload') }}" class="btn btn-primary">
+        <svg style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        New Inference
+      </a>
+      <div class="db-indicator {{ conn_type }}">
+        <span class="dot"></span> DB: {{ conn_type | capitalize }}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Disease Distribution -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Ensemble Model Frequencies</span>
+      </div>
+      <div class="freq-list">
+        {% for cls in class_names %}
+          {% set count = stats.disease_counts.get(cls, 0) %}
+          {% set pct = (count / stats.total * 100) if stats.total > 0 else 0 %}
+          <div class="freq-row">
+            <div class="freq-label">{{ cls }}</div>
+            <div class="freq-track">
+              <div class="freq-fill" data-width="{{ pct }}"></div>
+            </div>
+            <div class="freq-count">{{ count }}</div>
+          </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--clr-border-light);display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--clr-text-muted);font-weight:600;">
+        <span>Total Records</span>
+        <span style="font-size:1.1rem;color:var(--clr-primary);">{{ stats.total }}</span>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div>
+      <div class="stat-card" style="margin-bottom:1rem;height:auto;">
+        <div class="stat-num" style="display:flex;align-items:baseline;justify-content:center;gap:.3rem;">
+          {{ stats.disease_counts.get('Healthy', 0) }}
+          <span style="font-size:1rem;color:var(--clr-text-muted);font-weight:500;">/ {{ stats.total }}</span>
+        </div>
+        <div class="stat-label">Total Healthy Samples</div>
+      </div>
+      <div class="stat-card" style="border-top-color:var(--clr-warning);">
+        <div class="stat-num" style="color:var(--clr-danger);display:flex;align-items:baseline;justify-content:center;gap:.3rem;">
+          {{ stats.total - stats.disease_counts.get('Healthy', 0) }}
+          <span style="font-size:1rem;color:var(--clr-text-muted);font-weight:500;">/ {{ stats.total }}</span>
+        </div>
+        <div class="stat-label">Total Infected Samples</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Diagnostics Table -->
+  <div class="card mt-3">
+    <div class="card-header">
+      <span class="card-title">Recent Diagnostics (Detailed)</span>
+      <a href="{{ url_for('history') }}" class="btn btn-ghost btn-sm">Full Data Log</a>
+    </div>
+
+    {% if predictions %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Ensemble Prediction</th>
+              <th>Confidence</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in predictions %}
+            <tr>
+              <td>{{ p.date }}</td>
+              <td class="fw-bold text-muted">{{ p.predicted_class }}</td>
+              <td>
+                <span style="font-weight:700;color:{% if p.confidence > 0.8 %}var(--clr-success){% elif p.confidence > 0.6 %}var(--clr-warning){% else %}var(--clr-danger){% endif %};">
+                  {{ p.confidence_pct }}%
+                </span>
+              </td>
+              <td>
+                <a href="{{ url_for('result', prediction_id=p._id) }}" class="btn btn-outline btn-sm">View Details</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>No telemetry data</h3>
+        <p>Run a new inference to generate clinical diagnostic data.</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary mt-2">New Inference</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

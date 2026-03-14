@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Analysis History — CropGuard{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <div class="history-header">
+    <div>
+      <h1 style="color:var(--clr-primary-dark);margin-bottom:.3rem;">Analysis History</h1>
+      <p>Review past disease detections and export your diagnostic logs.</p>
+    </div>
+    <div class="export-actions">
+      <!-- Export buttons -->
+      <a href="{{ url_for('export_csv') }}" class="btn btn-outline btn-sm" title="Export to CSV">
+        <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download CSV
+      </a>
+      <a href="{{ url_for('export_json') }}" class="btn btn-outline btn-sm" title="Export to JSON">
+        <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download JSON
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    {% if predictions %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date / Time</th>
+              <th>Detected Condition</th>
+              {% if role == 'agronomist' %}<th>Confidence</th>{% endif %}
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in predictions %}
+            <tr>
+              <td>{{ p.date }}</td>
+              <td class="fw-bold">{{ p.predicted_class }}</td>
+              {% if role == 'agronomist' %}
+                <td>
+                  <span style="font-weight:700;color:{% if p.confidence > 0.8 %}var(--clr-success){% elif p.confidence > 0.6 %}var(--clr-warning){% else %}var(--clr-danger){% endif %};">
+                    {{ p.confidence_pct }}%
+                  </span>
+                </td>
+              {% endif %}
+              <td>
+                {% if p.predicted_class == 'Healthy' %}
+                  <span class="disease-pill healthy">Healthy</span>
+                {% elif p.predicted_class == 'Downy mildew' %}
+                  <span class="disease-pill downy">Downy Mildew</span>
+                {% elif p.predicted_class == 'Leaf curl disease' %}
+                  <span class="disease-pill leafcurl">Leaf Curl</span>
+                {% else %}
+                  <span class="disease-pill mosaic">Mosaic Virus</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('result', prediction_id=p._id) }}" class="btn btn-ghost btn-sm">View</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p style="text-align:right;font-size:.8rem;color:var(--clr-text-muted);margin-top:1rem;">
+        Total Records: {{ predictions|length }}
+      </p>
+    {% else %}
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>No history found</h3>
+        <p>Your analysis history will appear here once you process an image.</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary mt-2">Start Analysis</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

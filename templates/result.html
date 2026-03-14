@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Analysis Result — CropGuard{% endblock %}
+
+{% block content %}
+<div class="container-md">
+  
+  <div class="mb-3">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-sm" style="padding-left:0;">
+      <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Dashboard
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="result-image-wrap">
+      <img src="data:image/jpeg;base64,{{ prediction.image_data }}" alt="Uploaded leaf image" />
+    </div>
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <div class="disease-result-box" style="{% if prediction.predicted_class == 'Healthy' %}background:var(--clr-success-bg);border-color:var(--clr-success);{% endif %}">
+      {% if role == 'farmer' %}
+        <p style="margin-bottom:.3rem;color:var(--clr-text-muted);font-weight:600;text-transform:uppercase;font-size:.82rem;">Detection Result</p>
+        <div class="disease-name">{{ prediction.predicted_class }}</div>
+        {% if prediction.predicted_class == 'Healthy' %}
+          <p style="color:var(--clr-success);font-weight:600;">Your plant appears to be in good health.</p>
+        {% else %}
+          <p style="color:var(--clr-danger);font-weight:600;">Disease detected. Please review treatments below.</p>
+        {% endif %}
+      
+      {% else %}
+        <!-- Agronomist view -->
+        <p style="margin-bottom:.3rem;color:var(--clr-text-muted);font-weight:600;text-transform:uppercase;font-size:.82rem;">Primary Ensemble Inference</p>
+        <div class="disease-name">{{ prediction.predicted_class }}</div>
+        <p class="confidence-text">
+          Confidence Probability:
+          <span class="confidence-highlight" style="{% if prediction.confidence > 0.8 %}color:var(--clr-success);{% elif prediction.confidence > 0.6 %}color:var(--clr-warning);{% else %}color:var(--clr-danger);{% endif %}">
+            {{ prediction.confidence_pct }}%
+          </span>
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- ── Agronomist Only: Full Probabilities ───────────────────────────── -->
+    {% if role == 'agronomist' %}
+      <div class="mb-3" style="border:1px solid var(--clr-border-light);border-radius:var(--radius-md);padding:1.4rem;background:var(--clr-card-hover);">
+        <h4 style="color:var(--clr-primary);margin-bottom:1rem;font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;">Probability Matrix (All Classes)</h4>
+        <div class="prob-list">
+          {% set probs = prediction.all_probs_sorted if prediction.all_probs_sorted else prediction.all_probabilities %}
+          {% for cls, prob in probs.items() %}
+            <div class="prob-row">
+              <div class="prob-label">{{ cls }}</div>
+              <div class="prob-bar-track">
+                <div class="prob-bar-fill {% if loop.first %}top{% endif %}" data-pct="{{ (prob * 100)|round(2) }}"></div>
+              </div>
+              <div class="prob-pct">{{ (prob * 100)|round(2) }}%</div>
+            </div>
+          {% endfor %}
+        </div>
+        <p style="font-size:.78rem;color:var(--clr-text-muted);margin-top:1.2rem;border-top:1px dashed var(--clr-border);padding-top:.8rem;">
+          Inference timestamp: {{ prediction.date }} UTC.
+        </p>
+      </div>
+    {% endif %}
+
+    <!-- ── Treatment Recommendations (Both roles) ────────────────────────── -->
+    {% if prediction.treatment %}
+      <div class="treatment-section">
+        <h3>
+          {% if prediction.predicted_class == 'Healthy' %}
+            Maintenance Advice
+          {% else %}
+            Treatment & Recommendations
+          {% endif %}
+        </h3>
+        
+        <p style="margin-bottom:1.5rem;">{{ prediction.treatment.description }}</p>
+
+        {% if prediction.treatment.severity %}
+          <div class="severity-badge {% if prediction.treatment.severity == 'None' %}none{% endif %}">
+            Severity Level: {{ prediction.treatment.severity }}
+          </div>
+        {% endif %}
+
+        <div class="grid-2">
+          {% if prediction.treatment.symptoms and prediction.predicted_class != 'Healthy' %}
+            <div class="treatment-block">
+              <h4>Key Symptoms</h4>
+              <ul>
+                {% for sym in prediction.treatment.symptoms %}
+                  <li>{{ sym }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if prediction.treatment.treatments %}
+            <div class="treatment-block">
+              <h4>Recommended Actions</h4>
+              <ul>
+                {% for txt in prediction.treatment.treatments %}
+                  <li>{{ txt }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if prediction.treatment.prevention %}
+            <div class="treatment-block">
+              <h4>Prevention Methods</h4>
+              <ul>
+                {% for prev in prediction.treatment.prevention %}
+                  <li>{{ prev }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <!-- Missing treatment block (fail-safe) -->
+      <div class="treatment-section">
+        <p class="text-muted">No detailed treatment information is currently available for this condition in the active database.</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

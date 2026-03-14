@@ -1,0 +1,37 @@
+{
+  "img_size": [
+    224,
+    224
+  ],
+  "img_shape": [
+    224,
+    224,
+    3
+  ],
+  "class_names": [
+    "Downy mildew",
+    "Healthy",
+    "Leaf curl disease",
+    "Mosaic virus"
+  ],
+  "num_classes": 4,
+  "models": {
+    "efficientnetb0": "efficientnetb0_finetuned.keras",
+    "mobilenetv3small": "mobilenetv3small_finetuned.keras",
+    "ensemble": "ensemble_model.keras"
+  },
+  "preprocessing": {
+    "normalise": "divide_by_255",
+    "note": "Input images must be normalised to [0,1] before passing to any model."
+  },
+  "ensemble_weights": {
+    "efficientnetb0": 0.55,
+    "mobilenetv3small": 0.45
+  },
+  "disease_recommendations": {
+    "Downy mildew": "Caused by the oomycete Pseudoperonospora cubensis. Favoured by cool, moist conditions and high humidity.",
+    "Healthy": "No disease detected. The leaf appears healthy and vigorous.",
+    "Leaf curl disease": "Caused by Cucumber Leaf Curl Virus (CuLCV) transmitted by whiteflies (Bemisia tabaci). Spread is rapid in warm, dry conditions.",
+    "Mosaic virus": "Caused by Cucumber Mosaic Virus (CMV) or Watermelon Mosaic Virus (WMV), transmitted by aphids (Aphis gossypii, Myzus persicae)."
+  }
+}

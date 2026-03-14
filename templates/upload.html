@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Analyse Leaf — CropGuard{% endblock %}
+
+{% block content %}
+<div class="container-md">
+  <div class="card upload-panel">
+    <div class="text-center mb-3">
+      <h2>Upload Target Image</h2>
+      <p style="margin-top:.3rem;">
+        {% if session.role == 'farmer' %}
+          Upload a clear photograph of the affected pumpkin/cucurbit leaf to detect the disease.
+        {% else %}
+          Provide pumpkin/cucurbit foliage imagery for ensemble model diagnostic execution.
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- ── Source Tabs ──────────────────────────────────────────── -->
+    <div class="source-tabs">
+      <button class="source-tab active" id="tab-upload" type="button">
+        <svg viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Upload File
+      </button>
+      <button class="source-tab" id="tab-camera" type="button">
+        <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        DroidCam Capture
+      </button>
+    </div>
+
+    <!-- ── Upload Form ──────────────────────────────────────────── -->
+    <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data" id="upload-form">
+
+      <!-- Panel A: File Upload -->
+      <div id="panel-upload">
+        <div class="upload-zone" id="upload-zone" tabindex="0" role="button" aria-label="Drop image here or click to select file">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Drop your image here</h3>
+          <p>or click to browse from your device</p>
+          <p style="font-size:.75rem;margin-top:.6rem;">Supported formats: JPG, JPEG, PNG (Max 10MB)</p>
+        </div>
+      </div>
+
+      <!-- Panel B: DroidCam -->
+      <div id="panel-camera" style="display:none;">
+        <div class="droidcam-panel">
+
+          <!-- URL input row -->
+          <div class="droidcam-url-row">
+            <label class="form-label" for="droidcam-url" style="margin-bottom:.35rem;">
+              DroidCam Web Source URL
+            </label>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <input
+                type="text"
+                id="droidcam-url"
+                class="form-control"
+                placeholder="e.g. http://192.168.1.5:4747/video"
+                value="http://192.168.1.5:4747/video"
+              />
+              <button type="button" class="btn btn-outline btn-sm" id="btn-connect" style="white-space:nowrap;">
+                Connect
+              </button>
+            </div>
+            <p class="form-hint" style="margin-top:.4rem;">
+              Open DroidCam on your phone → note the IP shown → paste it above with port <strong>4747</strong>.
+            </p>
+          </div>
+
+          <!-- Live feed -->
+          <div class="droidcam-feed-wrap" id="feed-wrap">
+            <div class="droidcam-placeholder" id="feed-placeholder">
+              <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <p>Camera feed will appear here after connecting</p>
+            </div>
+            <img id="droidcam-feed" src="" alt="DroidCam live feed" style="display:none;" crossorigin="anonymous" />
+            <div class="droidcam-feed-error" id="feed-error" style="display:none;">
+              <svg viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <p id="feed-error-msg">Could not load camera feed. Check the URL and ensure DroidCam is running.</p>
+            </div>
+          </div>
+
+          <!-- Capture controls -->
+          <div class="droidcam-controls">
+            <button type="button" class="btn btn-primary" id="btn-capture" disabled>
+              <svg style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M6.343 6.343a8 8 0 1011.314 0M12 2v4"/></svg>
+              Capture Frame
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-retake" style="display:none;">
+              Retake
+            </button>
+          </div>
+
+          <!-- Hidden canvas for frame capture -->
+          <canvas id="capture-canvas" style="display:none;"></canvas>
+        </div>
+      </div>
+
+      <!-- Shared: hidden file input + preview -->
+      <input type="file" id="file-input" name="image" accept=".jpg,.jpeg,.png" />
+
+      <div id="image-preview-wrap">
+        <img id="image-preview" src="#" alt="Selected image preview" />
+        <div id="preview-name"></div>
+      </div>
+
+      <div class="text-center" style="margin-top:2rem;">
+        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+          <svg style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% if session.role == 'farmer' %}Detect Disease{% else %}Run Inference{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

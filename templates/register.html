@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Register — CropGuard{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card" style="max-width:460px;">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-circle">
+        <svg viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2>Create Account</h2>
+      <p>Join CropGuard to start detecting diseases</p>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" action="{{ url_for('register') }}" novalidate>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-control"
+          placeholder="Choose a username (min. 3 characters)"
+          value="{{ form_data.get('username', '') }}"
+          required
+          autocomplete="username"
+          autofocus
+          minlength="3"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+          placeholder="Min. 6 characters"
+          required
+          autocomplete="new-password"
+          minlength="6"
+        />
+        <span id="pw-strength" class="form-hint" aria-live="polite"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirm_password">Confirm Password</label>
+        <input
+          type="password"
+          id="confirm_password"
+          name="confirm_password"
+          class="form-control"
+          placeholder="Re-enter your password"
+          required
+          autocomplete="new-password"
+        />
+      </div>
+
+      <!-- Role selector -->
+      <div class="form-group">
+        <label class="form-label">Account Role</label>
+        <div class="role-options" role="radiogroup" aria-label="Select your role">
+
+          <div>
+            <input
+              type="radio"
+              id="role-farmer"
+              name="role"
+              value="farmer"
+              class="role-option"
+              {% if form_data.get('role') == 'farmer' or not form_data.get('role') %}checked{% endif %}
+              required
+            />
+            <label for="role-farmer" class="role-label">
+              <span class="role-icon">
+                <svg viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              Farmer
+            </label>
+          </div>
+
+          <div>
+            <input
+              type="radio"
+              id="role-agronomist"
+              name="role"
+              value="agronomist"
+              class="role-option"
+              {% if form_data.get('role') == 'agronomist' %}checked{% endif %}
+            />
+            <label for="role-agronomist" class="role-label">
+              <span class="role-icon">
+                <svg viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              Agronomist
+            </label>
+          </div>
+
+        </div>
+        <p class="form-hint" style="margin-top:.5rem;">
+          Farmers see disease results and treatment advice.
+          Agronomists see full confidence scores and probability data.
+        </p>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:.25rem;">
+        Create Account
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a href="{{ url_for('login') }}">Sign in here</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}
