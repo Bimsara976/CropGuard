@@ -1,0 +1,51 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CropGuard — .dockerignore
+# Files listed here are NOT copied into the Docker image.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Python virtual environment
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Environment secrets — never bake these into the image
+.env
+*.env
+
+# Docker files themselves (no need to copy into the container)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.idea/
+.vscode/
+
+# Test / development files
+tests/
+*.test.*
+pytest.ini
+.pytest_cache/
+
+# Logs
+*.log
+logs/
+
+# Large files you don't want in the image
+Capture.JPG

@@ -1,0 +1,70 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CropGuard — Docker Compose
+# Copyright U.J Tharushi Thathsarani w1953807 2025-2026
+#
+# Usage:
+#   Start:   docker compose up --build
+#   Stop:    docker compose down
+#   Logs:    docker compose logs -f
+#   Reset:   docker compose down -v   (also deletes MongoDB data)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Flask Application ───────────────────────────────────────────────────────
+  web:
+    build: .
+    container_name: cropguard_web
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # MongoDB — points to the mongo service below, NOT localhost
+      MONGO_URI: "mongodb://mongo:27017/"
+      # Gemini API key — paste your key here or use a .env file
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      # Flask secret key — change this before sharing publicly
+      SECRET_KEY: "${SECRET_KEY:-cropguard-secret-key-w1953807-2025}"
+    volumes:
+      # Persist nothing from the app container — model files are baked in.
+      # Uncomment below ONLY if you want live-reload during development:
+      # - .:/app
+      - cropguard_logs:/app/logs
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - cropguard_net
+
+  # ── MongoDB ─────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7.0
+    container_name: cropguard_mongo
+    restart: unless-stopped
+    ports:
+      # Expose locally so you can connect with MongoDB Compass if needed.
+      # Remove this port mapping when sharing publicly for security.
+      - "27017:27017"
+    volumes:
+      # Named volume so your data survives container restarts
+      - cropguard_mongo_data:/data/db
+      # Seed script: runs once on first startup to insert treatment data
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - cropguard_net
+
+# ── Named volumes ──────────────────────────────────────────────────────────────
+volumes:
+  cropguard_mongo_data:
+  cropguard_logs:
+
+# ── Network ────────────────────────────────────────────────────────────────────
+networks:
+  cropguard_net:
+    driver: bridge
