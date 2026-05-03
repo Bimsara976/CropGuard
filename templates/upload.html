@@ -18,11 +18,9 @@
     <!-- ── Source Tabs ──────────────────────────────────────────── -->
     <div class="source-tabs">
       <button class="source-tab active" id="tab-upload" type="button">
-        <svg viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Upload File
       </button>
       <button class="source-tab" id="tab-camera" type="button">
-        <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         DroidCam Capture
       </button>
     </div>
@@ -33,9 +31,6 @@
       <!-- Panel A: File Upload -->
       <div id="panel-upload">
         <div class="upload-zone" id="upload-zone" tabindex="0" role="button" aria-label="Drop image here or click to select file">
-          <div class="upload-icon">
-            <svg viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
           <h3>Drop your image here</h3>
           <p>or click to browse from your device</p>
           <p style="font-size:.75rem;margin-top:.6rem;">Supported formats: JPG, JPEG, PNG (Max 10MB)</p>
@@ -71,12 +66,10 @@
           <!-- Live feed -->
           <div class="droidcam-feed-wrap" id="feed-wrap">
             <div class="droidcam-placeholder" id="feed-placeholder">
-              <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <p>Camera feed will appear here after connecting</p>
             </div>
             <img id="droidcam-feed" src="" alt="DroidCam live feed" style="display:none;" crossorigin="anonymous" />
             <div class="droidcam-feed-error" id="feed-error" style="display:none;">
-              <svg viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <p id="feed-error-msg">Could not load camera feed. Check the URL and ensure DroidCam is running.</p>
             </div>
           </div>
@@ -84,7 +77,6 @@
           <!-- Capture controls -->
           <div class="droidcam-controls">
             <button type="button" class="btn btn-primary" id="btn-capture" disabled>
-              <svg style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M6.343 6.343a8 8 0 1011.314 0M12 2v4"/></svg>
               Capture Frame
             </button>
             <button type="button" class="btn btn-ghost btn-sm" id="btn-retake" style="display:none;">
@@ -107,7 +99,6 @@
 
       <div class="text-center" style="margin-top:2rem;">
         <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
-          <svg style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"/></svg>
           {% if session.role == 'farmer' %}Detect Disease{% else %}Run Inference{% endif %}
         </button>
       </div>
